@@ -7,7 +7,7 @@ namespace JNUnCov2019Checkin.JNUModule.ICAS
     public class DESUtil
     {
 
-        public string StrEnc(string data, string firstKey, string secondKey,
+        public static string StrEnc(string data, string firstKey, string secondKey,
                 string thirdKey)
         {
 
@@ -228,7 +228,7 @@ namespace JNUnCov2019Checkin.JNUModule.ICAS
             return encData;
         }
 
-        public string StrDec(string data, string firstKey, string secondKey,
+        public static string StrDec(string data, string firstKey, string secondKey,
                 string thirdKey)
         {
             int leng = data.Length;
@@ -322,7 +322,7 @@ namespace JNUnCov2019Checkin.JNUModule.ICAS
             return decStr;
         }
 
-        public List<int[]> GetKeyBytes(string key)
+        private static List<int[]> GetKeyBytes(string key)
         {
             List<int[]> keyBytes = new List<int[]>();
             int leng = key.Length;
@@ -341,12 +341,7 @@ namespace JNUnCov2019Checkin.JNUModule.ICAS
             return keyBytes;
         }
 
-        /*
-         * chang the string(it's length <= 4) into the bit array
-         * 
-         * return bit array(it's length = 64)
-         */
-        public int[] StrToBt(string str)
+        private static int[] StrToBt(string str)
         {
             int leng = str.Length;
             int[] bt = new int[64];
@@ -403,13 +398,7 @@ namespace JNUnCov2019Checkin.JNUModule.ICAS
             }
             return bt;
         }
-
-        /*
-         * chang the bit(it's length = 4) into the hex
-         * 
-         * return hex
-         */
-        public string Bt4ToHex(String binary)
+        private static string Bt4ToHex(String binary)
         {
             string hex = "";
             if (binary.Equals("0000", StringComparison.OrdinalIgnoreCase))
@@ -480,12 +469,7 @@ namespace JNUnCov2019Checkin.JNUModule.ICAS
             return hex;
         }
 
-        /*
-         * chang the hex into the bit(it's length = 4)
-         * 
-         * return the bit(it's length = 4)
-         */
-        public string HexToBt4(String hex)
+        private static string HexToBt4(String hex)
         {
             string binary = "";
             if (hex.Equals("0", StringComparison.OrdinalIgnoreCase))
@@ -555,7 +539,7 @@ namespace JNUnCov2019Checkin.JNUModule.ICAS
             return binary;
         }
 
-        public string ByteToString(int[] byteData)
+        private static string ByteToString(int[] byteData)
         {
             string str = "";
             for (int i = 0; i < 4; i++)
@@ -578,7 +562,7 @@ namespace JNUnCov2019Checkin.JNUModule.ICAS
             return str;
         }
 
-        public string Bt64ToHex(int[] byteData)
+        private static string Bt64ToHex(int[] byteData)
         {
             string hex = "";
             for (int i = 0; i < 16; i++)
@@ -593,7 +577,7 @@ namespace JNUnCov2019Checkin.JNUModule.ICAS
             return hex;
         }
 
-        public string HexToBt64(string hex)
+        private static string HexToBt64(string hex)
         {
             string binary = "";
             for (int i = 0; i < 16; i++)
@@ -603,7 +587,7 @@ namespace JNUnCov2019Checkin.JNUModule.ICAS
             return binary;
         }
 
-        public int[] Enc(int[] dataByte, int[] keyByte)
+        private static int[] Enc(int[] dataByte, int[] keyByte)
         {
             int[,] keys = GenerateKeys(keyByte);
             int[] ipByte = InitPermute(dataByte);
@@ -646,7 +630,7 @@ namespace JNUnCov2019Checkin.JNUModule.ICAS
             return FinallyPermute(finalData);
         }
 
-        public int[] Dec(int[] dataByte, int[] keyByte)
+        private static int[] Dec(int[] dataByte, int[] keyByte)
         {
             int[,] keys = GenerateKeys(keyByte);
             int[] ipByte = InitPermute(dataByte);
@@ -689,7 +673,7 @@ namespace JNUnCov2019Checkin.JNUModule.ICAS
             return FinallyPermute(finalData);
         }
 
-        public int[] InitPermute(int[] originalData)
+        private static int[] InitPermute(int[] originalData)
         {
             int[] ipByte = new int[64];
             int j, k;
@@ -707,7 +691,7 @@ namespace JNUnCov2019Checkin.JNUModule.ICAS
             return ipByte;
         }
 
-        public int[] ExpandPermute(int[] rightData)
+        private static int[] ExpandPermute(int[] rightData)
         {
             int[] epByte = new int[48];
             int i;
@@ -737,7 +721,7 @@ namespace JNUnCov2019Checkin.JNUModule.ICAS
             return epByte;
         }
 
-        public int[] Xor(int[] byteOne, int[] byteTwo)
+        private static int[] Xor(int[] byteOne, int[] byteTwo)
         {
             // var xorByte = new Array(byteOne.length);
             // for(int i = 0;i < byteOne.length; i ++){
@@ -752,7 +736,7 @@ namespace JNUnCov2019Checkin.JNUModule.ICAS
             return xorByte;
         }
 
-        public int[] SBoxPermute(int[] expandByte)
+        private static int[] SBoxPermute(int[] expandByte)
         {
 
             // var sBoxByte = new Array(32);
@@ -851,7 +835,7 @@ namespace JNUnCov2019Checkin.JNUModule.ICAS
             return sBoxByte;
         }
 
-        public int[] PPermute(int[] sBoxByte)
+        private static int[] PPermute(int[] sBoxByte)
         {
             int[] pBoxPermute = new int[32];
             pBoxPermute[0] = sBoxByte[15];
@@ -889,7 +873,7 @@ namespace JNUnCov2019Checkin.JNUModule.ICAS
             return pBoxPermute;
         }
 
-        public int[] FinallyPermute(int[] endByte)
+        private static int[] FinallyPermute(int[] endByte)
         {
             int[] fpByte = new int[64];
             fpByte[0] = endByte[39];
@@ -959,7 +943,7 @@ namespace JNUnCov2019Checkin.JNUModule.ICAS
             return fpByte;
         }
 
-        public string GetBoxBinary(int i)
+        private static string GetBoxBinary(int i)
         {
             string binary = "";
             switch (i)
@@ -1016,7 +1000,7 @@ namespace JNUnCov2019Checkin.JNUModule.ICAS
             return binary;
         }
 
-        public int[,] GenerateKeys(int[] keyByte)
+        private static int[,] GenerateKeys(int[] keyByte)
         {
             int[] key = new int[56];
             int[,] keys = new int[16, 48];

@@ -1,4 +1,5 @@
 ﻿using System;
+using JNUnCov2019Checkin.JNUModule.ICAS;
 
 namespace JNUnCov2019Checkin
 {
@@ -6,7 +7,9 @@ namespace JNUnCov2019Checkin
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var icas = new ICASModule();
+            icas.Login(Console.ReadLine(), Console.ReadLine()).Wait();
+            Console.WriteLine("Login successfully");
         }
     }
 }
