@@ -61,6 +61,8 @@ namespace JNUnCov2019Checkin.JNUModule.Ehall
             await client.GetAsync(entities0);
             await client.GetAsync("https://ehall.jnu.edu.cn/infoplus/alive");
 
+            client.DefaultRequestHeaders.Referrer = new Uri(entities0);
+
             using (var postData = new FormUrlEncodedContent(new Dictionary<string, string>() {
                 {"stepId",stepId },
                 {"csrfToken",csrfToken },
@@ -71,10 +73,11 @@ namespace JNUnCov2019Checkin.JNUModule.Ehall
                 {"lang","zh" }
             }.ToList()))
             {
+
                 var interfaceRenderContentJson = JObject.Parse(await (await client.PostAsync("https://ehall.jnu.edu.cn/infoplus/interface/render", postData)).Content.ReadAsStringAsync());
-                instanceId = interfaceRenderContentJson["entities"]["step"]["instanceId"].Value<string>();
-                timestamp = interfaceRenderContentJson["entities"]["step"]["timestamp"].Value<string>();
-            }
+                instanceId = interfaceRenderContentJson["entities"][0]["step"]["instanceId"].Value<string>();
+                timestamp = interfaceRenderContentJson["entities"][0]["step"]["timestamp"].Value<string>();
+            } 
 
             using (var postData = new FormUrlEncodedContent(new Dictionary<string, string>() {
                 {"stepId",stepId },
@@ -137,7 +140,7 @@ namespace JNUnCov2019Checkin.JNUModule.Ehall
 
             var response = await client.GetAsync(uri);
             handler.Dispose();
-            response.Dispose();
+            client.Dispose();
             if (response.StatusCode == HttpStatusCode.Redirect && response.Headers.Location != null)
             {
                 return await RecurseRedirectVisit(response.Headers.Location);
