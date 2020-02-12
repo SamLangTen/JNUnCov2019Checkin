@@ -18,7 +18,7 @@ namespace JNUnCov2019Checkin.JNUModule.Ehall
             if (content.Contains(checkLoginName))
                 return;
             else
-                throw new Exception(); 
+                throw new EhallLoginException(); 
         }
 
         private async Task<HttpResponseMessage> RecurseRedirectVisit(Uri uri)
