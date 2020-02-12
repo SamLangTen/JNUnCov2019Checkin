@@ -77,7 +77,7 @@ namespace JNUnCov2019Checkin.JNUModule.Ehall
                 var interfaceRenderContentJson = JObject.Parse(await (await client.PostAsync("https://ehall.jnu.edu.cn/infoplus/interface/render", postData)).Content.ReadAsStringAsync());
                 instanceId = interfaceRenderContentJson["entities"][0]["step"]["instanceId"].Value<string>();
                 timestamp = interfaceRenderContentJson["entities"][0]["step"]["timestamp"].Value<string>();
-            } 
+            }
 
             using (var postData = new FormUrlEncodedContent(new Dictionary<string, string>() {
                 {"stepId",stepId },
@@ -120,6 +120,40 @@ namespace JNUnCov2019Checkin.JNUModule.Ehall
                     return;
                 else
                     throw new EhallStudentNCov2019CheckinException();
+            }
+
+        }
+
+        public async Task<DateTime?> GetLastEventTime(string eventName)
+        {
+            var handler = new HttpClientHandler();
+            handler.AllowAutoRedirect = false;
+            handler.AutomaticDecompression = DecompressionMethods.GZip;
+            handler.CookieContainer = Cookies;
+            handler.UseCookies = true;
+            var client = new HttpClient(handler);
+            client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
+            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36");
+            client.DefaultRequestHeaders.Add("Connection", "keep-alive");
+
+            using (var postData = new FormUrlEncodedContent(new Dictionary<string, string>() {
+                { "limit","10"},
+                {"start","0" }
+            }.ToList()))
+            {
+                await client.PostAsync("https://ehall.jnu.edu.cn/taskcenter/api/me/processes/cc?limit=10&start=0", postData);
+                var json = JObject.Parse(await (await client.PostAsync("https://ehall.jnu.edu.cn/taskcenter/api/me/processes/done?limit=10&start=0", postData)).Content.ReadAsStringAsync());
+                var firstEvent = json["entities"].Children().FirstOrDefault(t => t["app"]["name"].Value<string>() == eventName);
+                if(firstEvent!=null)
+                {
+                    System.DateTime startTime = new System.DateTime(1970, 1, 1);
+                    DateTime dt = startTime.AddSeconds(long.Parse(firstEvent["create"].Value<string>()));
+                    return dt;
+                }
+                else
+                {
+                    return null;
+                }
             }
 
         }
