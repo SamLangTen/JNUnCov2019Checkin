@@ -119,7 +119,7 @@ namespace JNUnCov2019Checkin.JNUModule.Ehall
                 if (doActionJson["ecode"].Value<string>() == "SUCCEED")
                     return;
                 else
-                    throw new Exception();
+                    throw new EhallStudentNCov2019CheckinException();
             }
 
         }
