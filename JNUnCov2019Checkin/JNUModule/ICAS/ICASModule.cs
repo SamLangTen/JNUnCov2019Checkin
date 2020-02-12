@@ -15,7 +15,6 @@ namespace JNUnCov2019Checkin.JNUModule.ICAS
 
         public async Task Login(string username, string password)
         {
-            Cookies = new CookieContainer();
             HttpWebRequest loginPage = WebRequest.CreateHttp("https://icas.jnu.edu.cn/cas/login");
             loginPage.CookieContainer = Cookies;
             loginPage.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9";
