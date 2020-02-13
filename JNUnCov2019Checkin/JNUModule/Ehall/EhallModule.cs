@@ -144,10 +144,10 @@ namespace JNUnCov2019Checkin.JNUModule.Ehall
                 await client.PostAsync("https://ehall.jnu.edu.cn/taskcenter/api/me/processes/cc?limit=10&start=0", postData);
                 var json = JObject.Parse(await (await client.PostAsync("https://ehall.jnu.edu.cn/taskcenter/api/me/processes/done?limit=10&start=0", postData)).Content.ReadAsStringAsync());
                 var firstEvent = json["entities"].Children().FirstOrDefault(t => t["app"]["name"].Value<string>() == eventName);
-                if(firstEvent!=null)
+                if (firstEvent != null)
                 {
-                    System.DateTime startTime = new System.DateTime(1970, 1, 1);
-                    DateTime dt = startTime.AddSeconds(long.Parse(firstEvent["create"].Value<string>()));
+                    
+                    var dt = new DateTime(long.Parse(firstEvent["create"].Value<string>()) * 10000000 + 621355968000000000).ToLocalTime();
                     return dt;
                 }
                 else
