@@ -17,6 +17,52 @@ namespace JNUnCov2019Checkin
         static List<Config> Configs { get; set; }
         static CancellationTokenSource tokenSource { get; set; }
 
+        static async Task<DateTime?> Checkin(Config config)
+        {
+            DateTime? lastCheckinTime = null;
+            var cookies = new CookieContainer();
+            var icas = new ICASModule();
+            icas.Cookies = cookies;
+            try
+            {
+                await icas.Login(config.Username, config.Password);
+                Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} has logined in to ICAS");
+            }
+            catch (ICASLoginException)
+            {
+                Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} has failed to login to ICAS, exiting");
+                return lastCheckinTime;
+            }
+
+            var ehall = new EhallModule();
+            ehall.Cookies = cookies;
+            try
+            {
+                await ehall.Login(config.Realname);
+                Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} has logined to Ehall.");
+                lastCheckinTime = await ehall.GetLastEventTime("学生健康状况申报");
+                if (lastCheckinTime?.Day == DateTime.Now.Day)
+                    Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} found today's check-in, bot will not check-in again");
+                else
+                {
+                    await ehall.StudentnCov2019Checkin(config.PostBoundsField, config.PostFormData);
+                    Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} has finished today check-in.");
+                }
+
+            }
+            catch (EhallLoginException)
+            {
+                Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} has failed to login to Ehall, exiting");
+                return lastCheckinTime;
+            }
+            catch (EhallStudentNCov2019CheckinException)
+            {
+                Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} has failed to check-in, exiting");
+                return lastCheckinTime;
+            }
+            return lastCheckinTime;
+        }
+
         static async Task StartCheckin(Config config)
         {
             if (config.Enabled == false) return;
@@ -37,47 +83,9 @@ namespace JNUnCov2019Checkin
                 }
 
                 var todayCheckinTime = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, config.CheckinTime.Hour, config.CheckinTime.Minute, config.CheckinTime.Second);
-                if (lastCheckinTime == null || (lastCheckinTime.Value.Day != DateTime.Now.Day && DateTime.Now > todayCheckinTime))
+                if (lastCheckinTime == null || (!(lastCheckinTime.Value.Day == DateTime.Now.Day && lastCheckinTime.Value.Month == DateTime.Now.Month && lastCheckinTime.Value.Year == DateTime.Now.Year) && DateTime.Now > todayCheckinTime))
                 {
-                    var cookies = new CookieContainer();
-                    var icas = new ICASModule();
-                    icas.Cookies = cookies;
-                    try
-                    {
-                        await icas.Login(config.Username, config.Password);
-                        Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} has logined in to ICAS");
-                    }
-                    catch (ICASLoginException)
-                    {
-                        Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} has failed to login to ICAS, exiting");
-                        return;
-                    }
-
-                    var ehall = new EhallModule();
-                    ehall.Cookies = cookies;
-                    try
-                    {
-                        await ehall.Login(config.Realname);
-                        Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} has logined to Ehall.");
-                        lastCheckinTime = await ehall.GetLastEventTime("学生健康状况申报");
-                        if (lastCheckinTime?.Day == DateTime.Now.Day)
-                            Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} found today's check-in, bot will not check-in again");
-                        else
-                        {
-                            await ehall.StudentnCov2019Checkin(config.PostBoundsField, config.PostFormData);
-                            Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} has finished today check-in.");
-                        }
-                        
-                    }
-                    catch (EhallLoginException)
-                    {
-                        Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} has failed to login to Ehall, exiting");
-                        return;
-                    }
-                    catch (EhallStudentNCov2019CheckinException)
-                    {
-                        Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} has failed to check-in, trying again");
-                    }
+                    lastCheckinTime = await Checkin(config);
                 }
                 Thread.Sleep(600000);
             }
