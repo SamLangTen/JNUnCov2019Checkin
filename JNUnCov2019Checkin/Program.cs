@@ -95,13 +95,18 @@ namespace JNUnCov2019Checkin
         static void Main(string[] args)
         {
             string configPath = "./config.json";
-            if (args.Length != 0)
-                configPath = args[0];
             if (File.Exists(configPath))
                 Configs = Config.LoadConfigs(configPath);
             else
                 Configs = new List<Config>();
             Console.WriteLine("Load config successfully");
+
+            //Automatic mode
+            if (args.Length == 1 && args[0] == "-a")
+            {
+                Task.WaitAll(Configs.Select(c => Task.Run(() => Checkin(c))).ToArray());
+                return;
+            }
 
             tokenSource = new CancellationTokenSource();
 
