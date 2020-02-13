@@ -41,7 +41,7 @@ namespace JNUnCov2019Checkin
                 await ehall.Login(config.Realname);
                 Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} has logined to Ehall.");
                 lastCheckinTime = await ehall.GetLastEventTime("学生健康状况申报");
-                if (lastCheckinTime?.Day == DateTime.Now.Day)
+                if (lastCheckinTime?.Day == DateTime.Now.Day && lastCheckinTime?.Month == DateTime.Now.Month && lastCheckinTime?.Year == DateTime.Now.Year)
                     Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} found today's check-in, bot will not check-in again");
                 else
                 {
@@ -104,7 +104,7 @@ namespace JNUnCov2019Checkin
             //Automatic mode
             if (args.Length == 1 && args[0] == "-a")
             {
-                Task.WaitAll(Configs.Select(c => Task.Run(() => Checkin(c))).ToArray());
+                Task.WaitAll(Configs.Where(c => c.Enabled).Select(c => Task.Run(() => Checkin(c))).ToArray());
                 return;
             }
 
