@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Linq;
 using System.Collections.Concurrent;
+using JNUnCov2019Checkin.JNUModule.StuHealth;
 
 namespace JNUnCov2019Checkin
 {
@@ -17,80 +18,59 @@ namespace JNUnCov2019Checkin
         static List<Config> Configs { get; set; }
         static CancellationTokenSource tokenSource { get; set; }
 
-        static async Task<DateTime?> Checkin(Config config)
+        static async Task Checkin(Config config)
         {
-            DateTime? lastCheckinTime = null;
-            var cookies = new CookieContainer();
-            var icas = new ICASModule();
-            icas.Cookies = cookies;
-            try
-            {
-                await icas.Login(config.Username, config.Password);
-                Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} has logined in to ICAS");
-            }
-            catch (ICASLoginException)
-            {
-                Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} has failed to login to ICAS, exiting");
-                return lastCheckinTime;
-            }
 
-            var ehall = new EhallModule();
-            ehall.Cookies = cookies;
+            var cookies = new CookieContainer();
+
+            var stuhealth = new StuHealthModule();
+            stuhealth.Cookies = cookies;
+
             try
             {
-                await ehall.Login(config.Realname);
-                Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} has logined to Ehall.");
-                lastCheckinTime = await ehall.GetLastEventTime("学生健康状况申报");
-                if (lastCheckinTime?.Day == DateTime.Now.Day && lastCheckinTime?.Month == DateTime.Now.Month && lastCheckinTime?.Year == DateTime.Now.Year)
-                    Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} found today's check-in, bot will not check-in again");
+                if (config.IsManualMode)
+                {
+                    await stuhealth.Login(config.Username, config.EncryptedPassword);
+                    Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has logined in to StuHealth");
+
+                    if (stuhealth.State == CheckinState.Finished)
+                        Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} found today's check-in, bot will not check-in again");
+                    else if (stuhealth.State == CheckinState.Unfinished)
+                    {
+                        await stuhealth.Checkin(config.EncryptedUsername, config.PostMainTable);
+                        Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has finished today check-in");
+                    }
+
+                }
                 else
                 {
-                    await ehall.StudentnCov2019Checkin(config.PostBoundsField, config.PostFormData);
-                    Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} has finished today check-in.");
+                    await stuhealth.Login(config.Username, config.Password, config.Key);
+                    Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has logined in to StuHealth");
+
+                    if (stuhealth.State == CheckinState.Finished)
+                        Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} found today's check-in, bot will not check-in again");
+                    else if (stuhealth.State == CheckinState.Unfinished)
+                    {
+                        await stuhealth.Checkin(config.Username, config.Key, config.PostMainTable);
+                        Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has finished today check-in");
+                    }
                 }
-
             }
-            catch (EhallLoginException)
+            catch (StuHealthLoginException)
             {
-                Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} has failed to login to Ehall, exiting");
-                return lastCheckinTime;
+                Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has failed to login to StuHealth, exiting");
             }
-            catch (EhallStudentNCov2019CheckinException)
+            catch (StuHealthCheckinException)
             {
-                Console.WriteLine($"[{DateTime.Now}]Check-in bot #{config.Username} has failed to check-in, exiting");
-                return lastCheckinTime;
+                Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has failed to check-in, exiting");
             }
-            return lastCheckinTime;
-        }
-
-        static async Task StartCheckin(Config config)
-        {
-            if (config.Enabled == false) return;
-            if (tokenSource.IsCancellationRequested)
+            catch (Exception)
             {
-                Console.WriteLine($"Check-in bot {config.Username} has exited");
-                return;
-            }
-
-            DateTime? lastCheckinTime = null;
-
-            while (true)
-            {
-                if (tokenSource.IsCancellationRequested)
-                {
-                    Console.WriteLine($"Check-in bot {config.Username} has exited");
-                    return;
-                }
-
-                var todayCheckinTime = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, config.CheckinTime.Hour, config.CheckinTime.Minute, config.CheckinTime.Second);
-                if (lastCheckinTime == null || (!(lastCheckinTime.Value.Day == DateTime.Now.Day && lastCheckinTime.Value.Month == DateTime.Now.Month && lastCheckinTime.Value.Year == DateTime.Now.Year) && DateTime.Now > todayCheckinTime))
-                {
-                    lastCheckinTime = await Checkin(config);
-                }
-                Thread.Sleep(600000);
+                throw;
             }
 
         }
+
 
         static void Main(string[] args)
         {
@@ -104,6 +84,8 @@ namespace JNUnCov2019Checkin
             //Automatic mode
             if (args.Length == 1 && args[0] == "-a")
             {
+                if (Configs == null || Configs.Where(c => c.Enabled).Count() == 0) return;
+
                 Task.WaitAll(Configs.Where(c => c.Enabled).Select(c => Task.Run(() => Checkin(c))).ToArray());
                 return;
             }
@@ -118,34 +100,39 @@ namespace JNUnCov2019Checkin
                 if (option == "add")
                 {
                     var config = new Config();
+
                     Console.Write("Username:");
                     config.Username = Console.ReadLine();
-                    Console.Write("Password:");
-                    config.Password = Console.ReadLine();
-                    Console.Write("Realname:");
-                    config.Realname = Console.ReadLine();
-                    Console.Write("PostBoundsField Path:");
-                    config.PostBoundsField = File.ReadAllText(Console.ReadLine());
-                    Console.Write("PostFormData Path:");
-                    config.PostFormData = File.ReadAllText(Console.ReadLine());
-                    Console.Write("Check-in time(e.g. 05:44:22):");
-                    config.CheckinTime = DateTime.Parse(Console.ReadLine());
+
+                    Console.Write("Use Manual Mode(y/N):");
+                    if (Console.ReadLine().ToLower() == "y")
+                        config.IsManualMode = true;
+                    else
+                        config.IsManualMode = false;
+
+                    if (config.IsManualMode)
+                    {
+                        Console.Write("Encrypted Password:");
+                        config.EncryptedPassword = Console.ReadLine();
+                        Console.Write("Encrypted Username:");
+                        config.EncryptedUsername = Console.ReadLine();
+                    }
+                    else
+                    {
+                        Console.Write("Password:");
+                        config.Password = Console.ReadLine();
+                        Console.Write("Key:");
+                        config.Key = Console.ReadLine();
+                    }
+
+
+                    Console.Write("MainTable Json File Path");
+                    config.PostMainTable = File.ReadAllText(Console.ReadLine());
+
                     Console.Write("Enable this bot?(Y/n):");
                     config.Enabled = Console.ReadLine().ToLower() == "n" ? false : true;
                     Configs.Add(config);
                     Config.SaveConfigs(Configs, configPath);
-                }
-                else if (option == "start")
-                {
-                    Configs.Select(c => Task.Run(() => StartCheckin(c))).ToList().ForEach(t => tasks.Add(t));
-                }
-                else if (option == "stop")
-                {
-                    Console.WriteLine("Stopping all Check-in bots...");
-                    while (tasks.Where(t => t.Status == TaskStatus.Running).Count() > 0)
-                        ;
-                    tasks.Clear();
-                    Console.WriteLine("All Check-in bots have stopped");
                 }
             }
         }

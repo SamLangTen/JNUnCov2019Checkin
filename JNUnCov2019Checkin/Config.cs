@@ -10,10 +10,11 @@ namespace JNUnCov2019Checkin
     {
         public string Username { get; set; }
         public string Password { get; set; }
-        public string Realname { get; set; }
-        public string PostFormData { get; set; }
-        public string PostBoundsField { get; set; }
-        public DateTime CheckinTime { get; set; }
+        public string EncryptedUsername { get; set; }
+        public string EncryptedPassword { get; set; }
+        public string Key { get; set; }
+        public bool IsManualMode { get; set; }
+        public string PostMainTable { get; set; }
         public bool Enabled { get; set; }
         public static List<Config> LoadConfigs(string configPath = "./config.json")
         {
