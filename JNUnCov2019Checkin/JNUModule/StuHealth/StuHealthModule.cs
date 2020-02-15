@@ -58,12 +58,12 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
             return baseText;
         }
 
-        public async Task Login(string username, string password, string encryptKey)
+        public async Task<string> Login(string username, string password, string encryptKey)
         {
-            await Login(username, EncryptPassword(password, encryptKey));
+            return await Login(username, EncryptPassword(password, encryptKey));
         }
 
-        public async Task Login(string username, string encryptedPassword)
+        public async Task<string> Login(string username, string encryptedPassword)
         {
 
             var handler = new HttpClientHandler
@@ -104,14 +104,11 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
                     State = CheckinState.Finished;
                 else if (msg == "登录成功，今天未填写")
                     State = CheckinState.Unfinished;
+
+                return loginJson["data"]["jnuid"].Value<string>();
             }
 
 
-        }
-
-        public async Task Checkin(string username, string encryptKey, string mainTable)
-        {
-            await Checkin(EncryptUsername(username, encryptKey), mainTable);
         }
 
         public async Task Checkin(string encryptedUsername, string mainTable)

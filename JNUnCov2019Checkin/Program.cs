@@ -28,33 +28,25 @@ namespace JNUnCov2019Checkin
 
             try
             {
+                string encryptedUsername;
                 if (config.IsManualMode)
                 {
-                    await stuhealth.Login(config.Username, config.EncryptedPassword);
-                    Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has logined in to StuHealth");
-
-                    if (stuhealth.State == CheckinState.Finished)
-                        Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} found today's check-in, bot will not check-in again");
-                    else if (stuhealth.State == CheckinState.Unfinished)
-                    {
-                        await stuhealth.Checkin(config.EncryptedUsername, config.PostMainTable);
-                        Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has finished today check-in");
-                    }
-
+                    encryptedUsername = await stuhealth.Login(config.Username, config.EncryptedPassword);
                 }
                 else
                 {
-                    await stuhealth.Login(config.Username, config.Password, config.Key);
-                    Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has logined in to StuHealth");
-
-                    if (stuhealth.State == CheckinState.Finished)
-                        Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} found today's check-in, bot will not check-in again");
-                    else if (stuhealth.State == CheckinState.Unfinished)
-                    {
-                        await stuhealth.Checkin(config.Username, config.Key, config.PostMainTable);
-                        Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has finished today check-in");
-                    }
+                    encryptedUsername = await stuhealth.Login(config.Username, config.Password, config.Key);
                 }
+                Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has logined in to StuHealth");
+
+                if (stuhealth.State == CheckinState.Finished)
+                    Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} found today's check-in, bot will not check-in again");
+                else if (stuhealth.State == CheckinState.Unfinished)
+                {
+                    await stuhealth.Checkin(encryptedUsername, config.PostMainTable);
+                    Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has finished today check-in");
+                }
+
             }
             catch (StuHealthLoginException ex)
             {
@@ -114,8 +106,6 @@ namespace JNUnCov2019Checkin
                     {
                         Console.Write("Encrypted Password:");
                         config.EncryptedPassword = Console.ReadLine();
-                        Console.Write("Encrypted Username:");
-                        config.EncryptedUsername = Console.ReadLine();
                     }
                     else
                     {
@@ -128,7 +118,6 @@ namespace JNUnCov2019Checkin
                         if (Console.ReadLine().ToLower() != "n")
                         {
                             config.EncryptedPassword = StuHealthModule.EncryptPassword(config.Password, config.Key);
-                            config.EncryptedUsername = StuHealthModule.EncryptUsername(config.Username, config.Key);
                             config.Password = null;
                             config.Key = null;
                             config.IsManualMode = true;
