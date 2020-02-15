@@ -56,17 +56,17 @@ namespace JNUnCov2019Checkin
                     }
                 }
             }
-            catch (StuHealthLoginException)
+            catch (StuHealthLoginException ex)
             {
-                Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has failed to login to StuHealth, exiting");
+                Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has failed to login to StuHealth, reason: {ex.Message}");
             }
-            catch (StuHealthCheckinException)
+            catch (StuHealthCheckinException ex)
             {
-                Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has failed to check-in, exiting");
+                Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has failed to check-in, reason: {ex.Message}");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} got a unhandled exception, reason: {ex.Message}");
             }
 
         }
@@ -123,10 +123,19 @@ namespace JNUnCov2019Checkin
                         config.Password = Console.ReadLine();
                         Console.Write("Key:");
                         config.Key = Console.ReadLine();
+
+                        Console.Write("Use Automatic Mode once?(Y/n):");
+                        if (Console.ReadLine().ToLower() != "n")
+                        {
+                            config.EncryptedPassword = StuHealthModule.EncryptPassword(config.Password, config.Key);
+                            config.EncryptedUsername = StuHealthModule.EncryptUsername(config.Username, config.Key);
+                            config.Password = null;
+                            config.Key = null;
+                            config.IsManualMode = true;
+                        }
                     }
 
-
-                    Console.Write("MainTable Json File Path");
+                    Console.Write("MainTable Json File Path:");
                     config.PostMainTable = File.ReadAllText(Console.ReadLine());
 
                     Console.Write("Enable this bot?(Y/n):");

@@ -19,14 +19,14 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
 
         public CheckinState State { get; set; } = CheckinState.Undetermined;
 
-        public string EncryptPassword(string plainText, string key)
+        public static string EncryptPassword(string plainText, string key)
         {
             var baseText = EncryptUsername(plainText, key);
             baseText = new Regex(Regex.Escape("=")).Replace(baseText, "*", 1);
             return baseText;
         }
 
-        public string EncryptUsername(string plainText, string key)
+        public static string EncryptUsername(string plainText, string key)
         {
             byte[] encrypted;
 
@@ -93,12 +93,13 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
 
                 var loginJson = JObject.Parse(await (await client.PostAsync("https://stuhealth.jnu.edu.cn/api/user/login", postData)).Content.ReadAsStringAsync());
 
+                var msg = loginJson["meta"]["msg"].Value<string>();
+
                 if (loginJson["meta"]["success"].Value<bool>() == false)
                 {
-                    throw new StuHealthLoginException();
+                    throw new StuHealthLoginException(msg);
                 }
 
-                var msg = loginJson["meta"]["msg"].Value<string>();
                 if (msg == "登录成功，今天已填写")
                     State = CheckinState.Finished;
                 else if (msg == "登录成功，今天未填写")
@@ -145,7 +146,7 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
                 if (writeJson["meta"]["success"].Value<bool>() == true)
                     return;
                 else
-                    throw new StuHealthCheckinException();
+                    throw new StuHealthCheckinException(writeJson["meta"]["msg"].Value<string>());
             }
 
         }
