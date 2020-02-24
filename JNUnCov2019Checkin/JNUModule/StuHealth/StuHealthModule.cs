@@ -129,7 +129,10 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
                 await client.PostAsync("https://stuhealth.jnu.edu.cn/api/user/stuinfo", postData);
             }
 
-            using (var postData = new StringContent(mainTable))
+
+            var mainTableJson = JObject.Parse("{\"mainTable\":" + mainTable + ",\"jnuid\":\"" + encryptedUsername + "\"}");
+            mainTableJson["mainTable"]["declareTime"] = DateTime.Now.ToString("yyyy-MM-dd");
+            using (var postData = new StringContent(mainTableJson.ToString()))
             {
                 postData.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 

@@ -10,6 +10,7 @@ using System.Threading;
 using System.Linq;
 using System.Collections.Concurrent;
 using JNUnCov2019Checkin.JNUModule.StuHealth;
+using Newtonsoft.Json.Linq;
 
 namespace JNUnCov2019Checkin
 {
@@ -37,7 +38,7 @@ namespace JNUnCov2019Checkin
                     encryptedUsername = await stuhealth.Login(config.Username, config.Password, config.Key);
                 }
                 Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has logined in to StuHealth");
-                
+
                 if (stuhealth.State == CheckinState.Finished)
                     Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} found today's check-in, bot will not check-in again");
                 else if (stuhealth.State == CheckinState.Unfinished)
@@ -122,7 +123,8 @@ namespace JNUnCov2019Checkin
                     }
 
                     Console.Write("MainTable Json File Path:");
-                    config.PostMainTable = File.ReadAllText(Console.ReadLine());
+                    var mainTableJson = JObject.Parse(File.ReadAllText(Console.ReadLine()));
+                    config.PostMainTable = mainTableJson["mainTable"].ToString();
 
                     Console.Write("Enable this bot?(Y/n):");
                     config.Enabled = Console.ReadLine().ToLower() == "n" ? false : true;
