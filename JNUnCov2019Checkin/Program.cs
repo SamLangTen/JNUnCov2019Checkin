@@ -16,7 +16,6 @@ namespace JNUnCov2019Checkin
     class Program
     {
         static List<Config> Configs { get; set; }
-        static CancellationTokenSource tokenSource { get; set; }
 
         static async Task Checkin(Config config)
         {
@@ -38,7 +37,7 @@ namespace JNUnCov2019Checkin
                     encryptedUsername = await stuhealth.Login(config.Username, config.Password, config.Key);
                 }
                 Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has logined in to StuHealth");
-
+                
                 if (stuhealth.State == CheckinState.Finished)
                     Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} found today's check-in, bot will not check-in again");
                 else if (stuhealth.State == CheckinState.Unfinished)
@@ -81,8 +80,6 @@ namespace JNUnCov2019Checkin
                 Task.WaitAll(Configs.Where(c => c.Enabled).Select(c => Task.Run(() => Checkin(c))).ToArray());
                 return;
             }
-
-            tokenSource = new CancellationTokenSource();
 
             var tasks = new ConcurrentBag<Task>();
             while (true)

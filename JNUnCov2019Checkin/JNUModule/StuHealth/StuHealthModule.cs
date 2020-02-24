@@ -17,7 +17,7 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
 
         public CookieContainer Cookies { get; set; }
 
-        public CheckinState State { get; set; } = CheckinState.Undetermined;
+        public CheckinState State { get; private set; } = CheckinState.Undetermined;
 
         public static string EncryptPassword(string plainText, string key)
         {
@@ -39,19 +39,14 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
             })
             {
 
-                ICryptoTransform encryptor = myAes.CreateEncryptor();
-                using (MemoryStream msEncrypt = new MemoryStream())
+                var encryptor = myAes.CreateEncryptor();
+                using var msEncrypt = new MemoryStream();
+                using var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write);
+                using (var swEncrypt = new StreamWriter(csEncrypt))
                 {
-                    using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
-                    {
-                        using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
-                        {
-
-                            swEncrypt.Write(plainText);
-                        }
-                        encrypted = msEncrypt.ToArray();
-                    }
+                    swEncrypt.Write(plainText);
                 }
+                encrypted = msEncrypt.ToArray();
             }
             var baseText = Convert.ToBase64String(encrypted);
             baseText = baseText.Replace("+", "-").Replace("/", "_");
