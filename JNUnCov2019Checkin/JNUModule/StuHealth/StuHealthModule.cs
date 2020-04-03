@@ -14,8 +14,11 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
 {
     class StuHealthModule
     {
-
-        public CookieContainer Cookies { get; set; }
+        public StuHealthModule()
+        {
+            Cookies = new CookieContainer();
+        }
+        private CookieContainer Cookies { get; set; }
 
         public CheckinState State { get; private set; } = CheckinState.Undetermined;
 
@@ -51,6 +54,31 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
             var baseText = Convert.ToBase64String(encrypted);
             baseText = baseText.Replace("+", "-").Replace("/", "_");
             return baseText;
+        }
+
+        public static async Task<string> GetEncryptionKey()
+        {
+            var handler = new HttpClientHandler
+            {
+                AllowAutoRedirect = false,
+                AutomaticDecompression = DecompressionMethods.GZip,
+                UseCookies = true
+            };
+            var client = new HttpClient(handler);
+            client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
+            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36");
+            client.DefaultRequestHeaders.Add("Connection", "keep-alive");
+            client.DefaultRequestHeaders.Add("Host", "stuhealth.jnu.edu.cn");
+            client.DefaultRequestHeaders.Add("Origin", "https://stuhealth.jnu.edu.cn");
+            client.DefaultRequestHeaders.Add("Accept-Language", "zh-CN,zh;q=0.9,ja-JP;q=0.8,ja;q=0.7,en;q=0.6");
+
+            var mainPageContent = await (await client.GetAsync("https://stuhealth.jnu.edu.cn/")).Content.ReadAsStringAsync();
+            var bundleName = new Regex("(?<=src\\=\\\")main\\.[^\\.]*\\.bundle\\.js(?=\\\")").Match(mainPageContent).Value;
+
+            var jsContent = await (await client.GetAsync($"https://stuhealth.jnu.edu.cn/{bundleName}")).Content.ReadAsStringAsync();
+            var encryptionKey = new Regex("(?<=CRYPTOJSKEY\\=\\\")[^\\\"]*(?=\\\")").Match(jsContent).Value;
+
+            return encryptionKey;
         }
 
         public async Task<string> Login(string username, string password, string encryptKey)
@@ -104,6 +132,49 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
             }
 
 
+        }
+
+        public async Task<string> GetLastCheckin(string encryptedUsername)
+        {
+            var handler = new HttpClientHandler
+            {
+                AllowAutoRedirect = false,
+                AutomaticDecompression = DecompressionMethods.GZip,
+                CookieContainer = Cookies,
+                UseCookies = true
+            };
+            var client = new HttpClient(handler);
+            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36");
+            client.DefaultRequestHeaders.Add("Connection", "keep-alive");
+            client.DefaultRequestHeaders.Add("Host", "stuhealth.jnu.edu.cn");
+            client.DefaultRequestHeaders.Add("Accept", "application/json, text/plain, */*");
+            client.DefaultRequestHeaders.Add("Referer", "https://stuhealth.jnu.edu.cn/");
+
+            var checkinId = 0;
+            using (var postData = new StringContent("{\"jnuid\":\"" + encryptedUsername + "\"}"))
+            {
+                postData.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+                var checkinfoJson = JObject.Parse(await (await client.PostAsync("https://stuhealth.jnu.edu.cn/api/user/stucheckin", postData)).Content.ReadAsStringAsync());
+
+                if (checkinfoJson["data"]["checkinInfo"].HasValues == false)
+                    throw new StuHealthLastCheckinNotFoundException();
+
+                checkinId = checkinfoJson["data"]["checkinInfo"].First["id"].Value<int>();
+            }
+
+            var mainTable = "";
+            using (var postData = new StringContent("{\"jnuid\":\"" + encryptedUsername + "\",\"id\":\"" + checkinId.ToString() + "\"}"))
+            {
+                postData.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+                var checkinJson = JObject.Parse(await (await client.PostAsync("https://stuhealth.jnu.edu.cn/api/user/review", postData)).Content.ReadAsStringAsync());
+
+                checkinJson["data"]["mainTable"]["id"].Remove();
+                mainTable = checkinJson["data"]["mainTable"].ToString();
+            }
+
+            return mainTable;
         }
 
         public async Task Checkin(string encryptedUsername, string mainTable)

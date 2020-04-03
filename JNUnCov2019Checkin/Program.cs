@@ -18,32 +18,25 @@ namespace JNUnCov2019Checkin
     {
         static List<Config> Configs { get; set; }
 
-        static async Task Checkin(Config config)
+        static async Task Checkin(Config config, string encryptionKey)
         {
 
-            var cookies = new CookieContainer();
-
             var stuhealth = new StuHealthModule();
-            stuhealth.Cookies = cookies;
 
             try
             {
-                string encryptedUsername;
-                if (config.IsManualMode)
-                {
-                    encryptedUsername = await stuhealth.Login(config.Username, config.EncryptedPassword);
-                }
-                else
-                {
-                    encryptedUsername = await stuhealth.Login(config.Username, config.Password, config.Key);
-                }
+                var encryptedPassword = StuHealthModule.EncryptPassword(config.Password, encryptionKey);
+
+                var encryptedUsername = await stuhealth.Login(config.Username, encryptedPassword);
                 Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has logined in to StuHealth");
 
                 if (stuhealth.State == CheckinState.Finished)
                     Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} found today's check-in, bot will not check-in again");
                 else if (stuhealth.State == CheckinState.Unfinished)
                 {
-                    await stuhealth.Checkin(encryptedUsername, config.PostMainTable);
+                    var mainTable = await stuhealth.GetLastCheckin(encryptedUsername);
+
+                    await stuhealth.Checkin(encryptedUsername, mainTable);
                     Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has finished today check-in");
                 }
 
@@ -55,6 +48,10 @@ namespace JNUnCov2019Checkin
             catch (StuHealthCheckinException ex)
             {
                 Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has failed to check-in, reason: {ex.Message}");
+            }
+            catch (StuHealthLastCheckinNotFoundException)
+            {
+                Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} can not find last check-in record, please do check-in manually at least once");
             }
             catch (Exception ex)
             {
@@ -77,9 +74,22 @@ namespace JNUnCov2019Checkin
             if (args.Length == 1 && args[0] == "-a")
             {
                 if (Configs == null || Configs.Where(c => c.Enabled).Count() == 0) return;
+                try
+                {
+                    var encryptionKey = "";
+                    Task.WaitAll(Task.Run(async () =>
+                    {
+                        encryptionKey = await StuHealthModule.GetEncryptionKey();
+                    }));
+                    Console.WriteLine($"[{DateTime.Now.ToString()}] JNUnCov2019Checkin program has fetched the key");
 
-                Task.WaitAll(Configs.Where(c => c.Enabled).Select(c => Task.Run(() => Checkin(c))).ToArray());
-                return;
+                    Task.WaitAll(Configs.Where(c => c.Enabled).Select(c => Task.Run(() => Checkin(c, encryptionKey))).ToArray());
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[{DateTime.Now.ToString()}] JNUnCov2019Checkin program got exception while fetching key, reason:{ex.Message}");
+                }
             }
 
             var tasks = new ConcurrentBag<Task>();
@@ -94,37 +104,8 @@ namespace JNUnCov2019Checkin
                     Console.Write("Username:");
                     config.Username = Console.ReadLine();
 
-                    Console.Write("Use Manual Mode(y/N):");
-                    if (Console.ReadLine().ToLower() == "y")
-                        config.IsManualMode = true;
-                    else
-                        config.IsManualMode = false;
-
-                    if (config.IsManualMode)
-                    {
-                        Console.Write("Encrypted Password:");
-                        config.EncryptedPassword = Console.ReadLine();
-                    }
-                    else
-                    {
-                        Console.Write("Password:");
-                        config.Password = Console.ReadLine();
-                        Console.Write("Key:");
-                        config.Key = Console.ReadLine();
-
-                        Console.Write("Use Automatic Mode once?(Y/n):");
-                        if (Console.ReadLine().ToLower() != "n")
-                        {
-                            config.EncryptedPassword = StuHealthModule.EncryptPassword(config.Password, config.Key);
-                            config.Password = null;
-                            config.Key = null;
-                            config.IsManualMode = true;
-                        }
-                    }
-
-                    Console.Write("MainTable Json File Path:");
-                    var mainTableJson = JObject.Parse(File.ReadAllText(Console.ReadLine()));
-                    config.PostMainTable = mainTableJson["mainTable"].ToString();
+                    Console.Write("Password:");
+                    config.Password = Console.ReadLine();
 
                     Console.Write("Enable this bot?(Y/n):");
                     config.Enabled = Console.ReadLine().ToLower() == "n" ? false : true;
