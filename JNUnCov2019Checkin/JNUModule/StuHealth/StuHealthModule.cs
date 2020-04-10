@@ -12,6 +12,9 @@ using System.Net.Http.Headers;
 
 namespace JNUnCov2019Checkin.JNUModule.StuHealth
 {
+    /// <summary>
+    /// Represent an interface to access student health website
+    /// </summary>
     class StuHealthModule
     {
         public StuHealthModule()
@@ -20,8 +23,17 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
         }
         private CookieContainer Cookies { get; set; }
 
+        /// <summary>
+        /// Check-in statement of current logined user.
+        /// </summary>
         public CheckinState State { get; private set; } = CheckinState.Undetermined;
 
+        /// <summary>
+        /// Encrypt user's password with specified key by method that StuHealth website specified.
+        /// </summary>
+        /// <param name="plainText">Plain password</param>
+        /// <param name="key">Encryption key</param>
+        /// <returns>Encrpyted password</returns>
         public static string EncryptPassword(string plainText, string key)
         {
             var baseText = EncryptUsername(plainText, key);
@@ -29,7 +41,7 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
             return baseText;
         }
 
-        public static string EncryptUsername(string plainText, string key)
+        private static string EncryptUsername(string plainText, string key)
         {
             byte[] encrypted;
 
@@ -56,6 +68,10 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
             return baseText;
         }
 
+        /// <summary>
+        /// Get encryption key from frontend of StuHealth website
+        /// </summary>
+        /// <returns>Encryption key</returns>
         public static async Task<string> GetEncryptionKey()
         {
             var handler = new HttpClientHandler
@@ -81,11 +97,24 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
             return encryptionKey;
         }
 
+        /// <summary>
+        /// Login to StuHealth Website
+        /// </summary>
+        /// <param name="username">JNU Id</param>
+        /// <param name="password">Plain password</param>
+        /// <param name="encryptKey">Encryption key used to encrypt password in StuHealth website frontend</param>
+        /// <returns>Username encrypted by server</returns>
         public async Task<string> Login(string username, string password, string encryptKey)
         {
             return await Login(username, EncryptPassword(password, encryptKey));
         }
 
+        /// <summary>
+        /// Login to StuHealth Website
+        /// </summary>
+        /// <param name="username">JNU Id</param>
+        /// <param name="encryptedPassword">Encrypted password</param>
+        /// <returns>Username encrypted by server</returns>
         public async Task<string> Login(string username, string encryptedPassword)
         {
 
@@ -134,6 +163,11 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
 
         }
 
+        /// <summary>
+        /// Get last checkin form
+        /// </summary>
+        /// <param name="encryptedUsername">Username encrypted by server</param>
+        /// <returns>MainTable submitted in last time</returns>
         public async Task<string> GetLastCheckin(string encryptedUsername)
         {
             var handler = new HttpClientHandler
@@ -160,7 +194,7 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
                 if (checkinfoJson["data"]["checkinInfo"].HasValues == false)
                     throw new StuHealthLastCheckinNotFoundException();
 
-                checkinId = checkinfoJson["data"]["checkinInfo"].First["id"].Value<int>();
+                checkinId = checkinfoJson["data"]["checkinInfo"].First.Next["id"].Value<int>();
             }
 
             var mainTable = "";
@@ -170,13 +204,18 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
 
                 var checkinJson = JObject.Parse(await (await client.PostAsync("https://stuhealth.jnu.edu.cn/api/user/review", postData)).Content.ReadAsStringAsync());
 
-                checkinJson["data"]["mainTable"]["id"].Remove();
                 mainTable = checkinJson["data"]["mainTable"].ToString();
             }
 
             return mainTable;
         }
 
+        /// <summary>
+        /// Do a checkin
+        /// </summary>
+        /// <param name="encryptedUsername">Username encrypted by server</param>
+        /// <param name="mainTable">A specified form that contains student's information. It can be fetch by <see cref="StuHealth.StuHealthModule.GetLastCheckin(string)"/> function</param>
+        /// <seealso cref="StuHealth.StuHealthModule.GetLastCheckin(string)"/>
         public async Task Checkin(string encryptedUsername, string mainTable)
         {
             var handler = new HttpClientHandler
@@ -202,6 +241,7 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
 
 
             var mainTableJson = JObject.Parse("{\"mainTable\":" + mainTable + ",\"jnuid\":\"" + encryptedUsername + "\"}");
+            mainTableJson["mainTable"]["id"] = null;
             mainTableJson["mainTable"]["declareTime"] = DateTime.Now.ToString("yyyy-MM-dd");
             using (var postData = new StringContent(mainTableJson.ToString()))
             {
@@ -218,10 +258,22 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
         }
     }
 
+    /// <summary>
+    /// Checkin State
+    /// </summary>
     enum CheckinState
     {
+        /// <summary>
+        /// User has finished today's checkin.
+        /// </summary>
         Finished,
+        /// <summary>
+        /// User has not finished today's checkin.
+        /// </summary>
         Unfinished,
+        /// <summary>
+        /// User has not logined so that module doesn't know whether user has checkin today.
+        /// </summary>
         Undetermined
     }
 

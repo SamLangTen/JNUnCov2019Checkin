@@ -92,7 +92,6 @@ namespace JNUnCov2019Checkin
                 }
             }
 
-            var tasks = new ConcurrentBag<Task>();
             while (true)
             {
                 Console.Write(">");
