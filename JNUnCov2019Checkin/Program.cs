@@ -47,11 +47,15 @@ namespace JNUnCov2019Checkin
             }
             catch (StuHealthCheckinException ex)
             {
-                Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has failed to check-in, reason: {ex.Message}");
+                Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has failed to do check-in, reason: {ex.Message}");
             }
             catch (StuHealthLastCheckinNotFoundException)
             {
                 Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} can not find last check-in record, please do check-in manually at least once");
+            }
+            catch (StuHealthCheckinLessThanSixHourException)
+            {
+                Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} can not do check-in because it has been done in 6 hours, please do check-in again after 6 hours");
             }
             catch (Exception ex)
             {

@@ -152,6 +152,11 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
                     throw new StuHealthLoginException(msg);
                 }
 
+                if(msg== "登录成功，填写相隔小于6小时")
+                {
+                    throw new StuHealthCheckinLessThanSixHourException();
+                }
+
                 if (msg == "登录成功，今天已填写")
                     State = CheckinState.Finished;
                 else if (msg == "登录成功，今天未填写")
