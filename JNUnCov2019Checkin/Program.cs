@@ -18,7 +18,7 @@ namespace JNUnCov2019Checkin
     {
         static List<Config> Configs { get; set; }
 
-        static async Task Checkin(Config config, string encryptionKey)
+        static async Task<bool> Checkin(Config config, string encryptionKey)
         {
 
             var stuhealth = new StuHealthModule();
@@ -39,6 +39,7 @@ namespace JNUnCov2019Checkin
                     await stuhealth.Checkin(encryptedUsername, mainTable);
                     Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} has finished today check-in");
                 }
+                return true;
 
             }
             catch (StuHealthLoginException ex)
@@ -61,6 +62,7 @@ namespace JNUnCov2019Checkin
             {
                 Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{config.Username} got a unhandled exception, reason: {ex.Message}");
             }
+            return false;
 
         }
 
@@ -87,12 +89,19 @@ namespace JNUnCov2019Checkin
                     }));
                     Console.WriteLine($"[{DateTime.Now.ToString()}] JNUnCov2019Checkin program has fetched the key");
 
-                    Task.WaitAll(Configs.Where(c => c.Enabled).Select(c => Task.Run(() => Checkin(c, encryptionKey))).ToArray());
+                    var checkTasks = Configs.Where(c => c.Enabled).Select(c => Task.Run(() => Checkin(c, encryptionKey))).ToArray();
+                    Task.WaitAll(checkTasks);
+                    var successTaskCount = (from r in checkTasks where r.Result == true select r.Result).Count();
+
+                    if (successTaskCount != checkTasks.Length)
+                        Environment.Exit(1);
+
                     return;
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"[{DateTime.Now.ToString()}] JNUnCov2019Checkin program got exception while fetching key, reason:{ex.Message}");
+                    Environment.Exit(1);
                 }
             }
 
