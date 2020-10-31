@@ -200,10 +200,10 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
                     throw new StuHealthLastCheckinNotFoundException();
 
                 var checkNode = checkinfoJson["data"]["checkinInfo"].First;
-                while (checkinfoJson["id"].HasValues == false && checkNode.Next != null)
+                while (checkNode["id"].Value<string>() == null && checkNode.Next != null)
                     checkNode = checkNode.Next;
 
-                if (checkNode["id"].HasValues == false)
+                if (checkNode["id"].Value<string>() == null)
                     throw new StuHealthLastCheckinNotFoundException();
 
                 checkinId = checkNode["id"].Value<int>();
