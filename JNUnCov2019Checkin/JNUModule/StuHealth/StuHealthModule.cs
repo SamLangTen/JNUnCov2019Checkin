@@ -152,7 +152,7 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
                     throw new StuHealthLoginException(msg);
                 }
 
-                if(msg== "登录成功，填写相隔小于6小时")
+                if (msg == "登录成功，填写相隔小于6小时")
                 {
                     throw new StuHealthCheckinLessThanSixHourException();
                 }
@@ -199,7 +199,14 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
                 if (checkinfoJson["data"]["checkinInfo"].HasValues == false)
                     throw new StuHealthLastCheckinNotFoundException();
 
-                checkinId = checkinfoJson["data"]["checkinInfo"].First.Next["id"].Value<int>();
+                var checkNode = checkinfoJson["data"]["checkinInfo"].First;
+                while (checkNode["id"].Value<string>() == null && checkNode.Next != null)
+                    checkNode = checkNode.Next;
+
+                if (checkNode["id"].Value<string>() == null)
+                    throw new StuHealthLastCheckinNotFoundException();
+
+                checkinId = checkNode["id"].Value<int>();
             }
 
             var mainTable = "";
