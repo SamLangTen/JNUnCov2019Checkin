@@ -44,3 +44,9 @@ Docker image can only run under Check-in Mode, a configuration file should be pr
     ```
     docker run -v /path/to/your/config/file.json:/app/config.json --rm jnu-ncov2019-checkin
     ```
+
+    or use environment variables:
+
+    ```
+    docker run -e JNUCHECKIN_USERNAME=your_username -e JNUCHECKIN_PASSWORD=your_password --rm jnu-ncov2019-checkin
+    ```

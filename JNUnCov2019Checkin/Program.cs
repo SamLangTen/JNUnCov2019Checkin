@@ -69,11 +69,21 @@ namespace JNUnCov2019Checkin
 
         static void Main(string[] args)
         {
+            //Load config from file
             string configPath = "./config.json";
             if (File.Exists(configPath))
                 Configs = Config.LoadConfigs(configPath);
             else
                 Configs = new List<Config>();
+
+            //Load config from environment variable
+            var envConfig = new Config();
+            envConfig.Username = Environment.GetEnvironmentVariable("JNUCHECKIN_USERNAME");
+            envConfig.Password = Environment.GetEnvironmentVariable("JNUCHECKIN_PASSWORD");
+            envConfig.Enabled = true;
+            if (envConfig.Username != null && envConfig.Password != null)
+                Configs.Add(envConfig);
+
             Console.WriteLine("Load config successfully");
 
             //Automatic mode
