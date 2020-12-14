@@ -40,6 +40,6 @@ docker run -v /path/to/your/config/file.json:/app/config.json --rm samlangten/jn
 
 or use environment variables without mounting:
 
-    ```
-    docker run -e JNUCHECKIN_USERNAME=your_username -e JNUCHECKIN_PASSWORD=your_password --rm samlangten/jnu-ncov2019-checkin
-    ```
+```
+docker run -e JNUCHECKIN_USERNAME=your_username -e JNUCHECKIN_PASSWORD=your_password --rm samlangten/jnu-ncov2019-checkin
+```
