@@ -1,6 +1,6 @@
 # JNU nCov2019 Check-in
 
-[英语](README.md)
+[English](README.md)
 
 本程序为JNU学生的每日健康打卡提供自动化服务。
 
