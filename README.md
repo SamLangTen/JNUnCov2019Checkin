@@ -1,5 +1,7 @@
 # JNU nCov2019 Check-in
 
+[简体中文](README.zh-CN.md)
+
 This program is used for JNU Student's Daily Health Check-in for nCov2019.
 
 ## Warning
