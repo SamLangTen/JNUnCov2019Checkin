@@ -32,21 +32,14 @@ Docker image can only run under Check-in Mode, a configuration file should be pr
 ]
 ```
 
-1. Build docker image:
+Create and run docker image with mounting configuration file ( ```--rm``` means that container will be removed after execution ):
+
+```
+docker run -v /path/to/your/config/file.json:/app/config.json --rm samlangten/jnu-ncov2019-checkin
+```
+
+or use environment variables without mounting:
 
     ```
-    cd ./JNUnCov2019Checkin
-    docker build . -t jnu-ncov2019-checkin
-    ```
-
-2. Create and run docker image with mounting configuration file ( ```--rm``` means that container will be removed after execution ):
-
-    ```
-    docker run -v /path/to/your/config/file.json:/app/config.json --rm jnu-ncov2019-checkin
-    ```
-
-    or use environment variables:
-
-    ```
-    docker run -e JNUCHECKIN_USERNAME=your_username -e JNUCHECKIN_PASSWORD=your_password --rm jnu-ncov2019-checkin
+    docker run -e JNUCHECKIN_USERNAME=your_username -e JNUCHECKIN_PASSWORD=your_password --rm samlangten/jnu-ncov2019-checkin
     ```
