@@ -9,7 +9,7 @@
 本程序不是用户友好的程序。如果您不知如何编译或部署本程序请勿使用。
 
 
-> **注意：请用在安全的机器上，本程序不会保存您输入的密码。**
+> **注意：请用在安全的机器上，本程序不会加密您输入的密码。**
 
 ## 使用方法
 
@@ -31,6 +31,11 @@ Docker镜像里的程序只能运行在打卡模式，您需要实现准备好�
         "Username":"用户名",
         "Password":"密码",
         "Enabled":true
+    },
+    {
+        "Username":"打卡用户名称（自定义）",
+        "EncryptedUsername":"加密后的用户名",
+        "Enabled":true
     }
 ]
 ```
@@ -44,5 +49,5 @@ docker run -v /path/to/your/config/file.json:/app/config.json --rm samlangten/jn
 或者直接使用环境变量：
 
 ```
-docker run -e JNUCHECKIN_USERNAME=your_username -e JNUCHECKIN_PASSWORD=your_password --rm samlangten/jnu-ncov2019-checkin
+docker run -e JNUCHECKIN1_USERNAME=your_username -e JNUCHECKIN1_PASSWORD=your_password -e JNUCHECKIN2_USERNAME=your_username -e JNUCHECKIN2_ENCRYPTED=your_encrypted_username --rm samlangten/jnu-ncov2019-checkin
 ```

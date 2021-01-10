@@ -10,6 +10,7 @@ namespace JNUnCov2019Checkin
     {
         public string Username { get; set; }
         public string Password { get; set; }
+        public string EncryptedUsername { get; set; }
         public bool Enabled { get; set; }
         public static List<Config> LoadConfigs(string configPath = "./config.json")
         {
