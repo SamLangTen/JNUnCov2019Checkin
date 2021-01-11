@@ -1,16 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
-using System.Net.Http;
-using JNUnCov2019Checkin.JNUModule.Ehall;
-using JNUnCov2019Checkin.JNUModule.ICAS;
 using System.Threading.Tasks;
-using System.Threading;
 using System.Linq;
-using System.Collections.Concurrent;
 using JNUnCov2019Checkin.JNUModule.StuHealth;
-using Newtonsoft.Json.Linq;
 
 namespace JNUnCov2019Checkin
 {
@@ -37,12 +30,6 @@ namespace JNUnCov2019Checkin
 
                     encryptedUsername = await stuhealth.Login(config.Username, encryptedPassword);
                     Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{botName} has logined in to StuHealth");
-
-                    if (stuhealth.State == CheckinState.Finished)
-                    {
-                        Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{botName} found today's check-in, bot will not check-in again");
-                        return true;
-                    }
                 }
                 else
                 {
@@ -54,8 +41,7 @@ namespace JNUnCov2019Checkin
                 var mainTable = await stuhealth.GetLastCheckin(encryptedUsername);
 
                 //Check if checkin today
-                var lastCheckinDate = DateTime.Parse(JObject.Parse(mainTable)["declareTime"].Value<string>());
-                if(lastCheckinDate.Year == DateTime.Now.Year && lastCheckinDate.Month == DateTime.Now.Month && lastCheckinDate.Date == DateTime.Now.Date)
+                if (stuhealth.State == CheckinState.Finished)
                 {
                     Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{botName} found today's check-in, bot will not check-in again");
                     return true;

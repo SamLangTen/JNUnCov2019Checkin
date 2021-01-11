@@ -216,6 +216,14 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
 
                 var checkinJson = JObject.Parse(await (await client.PostAsync("https://stuhealth.jnu.edu.cn/api/user/review", postData)).Content.ReadAsStringAsync());
 
+                //Check if there is a checkin today
+                var lastCheckinDate = DateTime.Parse(checkinJson["data"]["mainTable"]["declareTime"].Value<string>());
+                if (lastCheckinDate.Year == DateTime.Now.Year && lastCheckinDate.Month == DateTime.Now.Month && lastCheckinDate.Date == DateTime.Now.Date)
+                    State = CheckinState.Finished;
+                else
+                    State = CheckinState.Unfinished;
+
+
                 mainTable = checkinJson["data"]["mainTable"].ToString();
             }
 
