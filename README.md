@@ -30,6 +30,11 @@ Docker image can only run under Check-in Mode, a configuration file should be pr
         "Username":"your username",
         "Password":"your password",
         "Enabled":true
+    },
+    {
+        "Username":"your bot name",
+        "EncryptedUsername":"your encrypted username",
+        "Enabled":true
     }
 ]
 ```
@@ -43,5 +48,5 @@ docker run -v /path/to/your/config/file.json:/app/config.json --rm samlangten/jn
 or use environment variables without mounting:
 
 ```
-docker run -e JNUCHECKIN_USERNAME=your_username -e JNUCHECKIN_PASSWORD=your_password --rm samlangten/jnu-ncov2019-checkin
+docker run -e JNUCHECKIN1_USERNAME=your_username -e JNUCHECKIN1_PASSWORD=your_password -e JNUCHECKIN2_USERNAME=your_username -e JNUCHECKIN2_ENCRYPTED=your_encrypted_username --rm samlangten/jnu-ncov2019-checkin
 ```
