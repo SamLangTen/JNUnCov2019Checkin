@@ -37,8 +37,8 @@ namespace JNUnCov2019Checkin
                     encryptedUsername = config.EncryptedUsername;
                 }
 
-                //Get last main table
-                var mainTable = await stuhealth.GetLastCheckin(encryptedUsername);
+                //Get last data table
+                var dataTable = await stuhealth.GetLastCheckin(encryptedUsername);
 
                 //Check if checkin today
                 if (stuhealth.State == CheckinState.Finished)
@@ -48,7 +48,7 @@ namespace JNUnCov2019Checkin
                 }
 
                 //Do checkin now
-                await stuhealth.Checkin(encryptedUsername, mainTable);
+                await stuhealth.Checkin(encryptedUsername, dataTable);
                 Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{botName} has finished today check-in");
 
                 return true;
@@ -91,11 +91,13 @@ namespace JNUnCov2019Checkin
             int envIndex = 1;
             while (true)
             {
-                var envConfig = new Config();
-                envConfig.Username = Environment.GetEnvironmentVariable($"JNUCHECKIN{envIndex}_USERNAME");
-                envConfig.Password = Environment.GetEnvironmentVariable($"JNUCHECKIN{envIndex}_PASSWORD");
-                envConfig.EncryptedUsername = Environment.GetEnvironmentVariable($"JNUCHECKIN{envIndex}_ENCRYPTED");
-                envConfig.Enabled = true;
+                var envConfig = new Config
+                {
+                    Username = Environment.GetEnvironmentVariable($"JNUCHECKIN{envIndex}_USERNAME"),
+                    Password = Environment.GetEnvironmentVariable($"JNUCHECKIN{envIndex}_PASSWORD"),
+                    EncryptedUsername = Environment.GetEnvironmentVariable($"JNUCHECKIN{envIndex}_ENCRYPTED"),
+                    Enabled = true
+                };
                 if ((envConfig.Username != null && envConfig.Password != null) || envConfig.EncryptedUsername != null)
                     Configs.Add(envConfig);
                 else

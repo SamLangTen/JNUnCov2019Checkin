@@ -172,7 +172,7 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
         /// Get last checkin form
         /// </summary>
         /// <param name="encryptedUsername">Username encrypted by server</param>
-        /// <returns>MainTable submitted in last time</returns>
+        /// <returns>data submitted in last time</returns>
         public async Task<string> GetLastCheckin(string encryptedUsername)
         {
             var handler = new HttpClientHandler
@@ -209,7 +209,7 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
                 checkinId = checkNode["id"].Value<int>();
             }
 
-            var mainTable = "";
+            var lastDataTable = "";
             using (var postData = new StringContent("{\"jnuid\":\"" + encryptedUsername + "\",\"id\":\"" + checkinId.ToString() + "\"}"))
             {
                 postData.Headers.ContentType = new MediaTypeHeaderValue("application/json");
@@ -224,19 +224,19 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
                     State = CheckinState.Unfinished;
 
 
-                mainTable = checkinJson["data"]["mainTable"].ToString();
+                lastDataTable = checkinJson["data"].ToString();
             }
 
-            return mainTable;
+            return lastDataTable;
         }
 
         /// <summary>
         /// Do a checkin
         /// </summary>
         /// <param name="encryptedUsername">Username encrypted by server</param>
-        /// <param name="mainTable">A specified form that contains student's information. It can be fetch by <see cref="StuHealth.StuHealthModule.GetLastCheckin(string)"/> function</param>
+        /// <param name="dataTable">A specified form that contains student's information. It can be fetch by <see cref="StuHealth.StuHealthModule.GetLastCheckin(string)"/> function</param>
         /// <seealso cref="StuHealth.StuHealthModule.GetLastCheckin(string)"/>
-        public async Task Checkin(string encryptedUsername, string mainTable)
+        public async Task Checkin(string encryptedUsername, string dataTable)
         {
             var handler = new HttpClientHandler
             {
@@ -260,10 +260,15 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
             }
 
 
-            var mainTableJson = JObject.Parse("{\"mainTable\":" + mainTable + ",\"jnuid\":\"" + encryptedUsername + "\"}");
-            mainTableJson["mainTable"]["id"] = null;
-            mainTableJson["mainTable"]["declareTime"] = DateTime.Now.ToString("yyyy-MM-dd");
-            using (var postData = new StringContent(mainTableJson.ToString()))
+            var dataTableJson = JObject.Parse(dataTable);
+
+            var postDataJson = JObject.Parse("{\"mainTable\":" + dataTableJson["mainTable"].ToString() + ",\"secondTable\":\"" + dataTableJson["secondTable"].ToString() + "\",\"jnuid\":\"" + encryptedUsername + "\"}");
+            postDataJson["mainTable"]["id"] = null;
+            postDataJson["mainTable"]["declareTime"] = DateTime.Now.ToString("yyyy-MM-dd");
+            postDataJson["secondTable"]["mainId"] = null;
+            postDataJson["secondTable"]["id"] = null;
+
+            using (var postData = new StringContent(postDataJson.ToString()))
             {
                 postData.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
