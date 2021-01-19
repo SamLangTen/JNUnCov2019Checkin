@@ -262,7 +262,7 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
 
             var dataTableJson = JObject.Parse(dataTable);
 
-            var postDataJson = JObject.Parse("{\"mainTable\":" + dataTableJson["mainTable"].ToString() + ",\"secondTable\":\"" + dataTableJson["secondTable"].ToString() + "\",\"jnuid\":\"" + encryptedUsername + "\"}");
+            var postDataJson = JObject.Parse("{\"mainTable\":" + dataTableJson["mainTable"].ToString() + ",\"secondTable\":" + dataTableJson["secondTable"].ToString() + ",\"jnuid\":\"" + encryptedUsername + "\"}");
             postDataJson["mainTable"]["id"] = null;
             postDataJson["mainTable"]["declareTime"] = DateTime.Now.ToString("yyyy-MM-dd");
             postDataJson["secondTable"]["mainId"] = null;
