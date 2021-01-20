@@ -218,7 +218,8 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
 
                 //Check if there is a checkin today
                 var lastCheckinDate = DateTime.Parse(checkinJson["data"]["mainTable"]["declareTime"].Value<string>());
-                if (lastCheckinDate.Year == DateTime.Now.Year && lastCheckinDate.Month == DateTime.Now.Month && lastCheckinDate.Date == DateTime.Now.Date)
+                var nowTimeCST = TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.FindSystemTimeZoneById("China Standard Time"));
+                if (lastCheckinDate.Year == nowTimeCST.Year && lastCheckinDate.Month == nowTimeCST.Month && lastCheckinDate.Date == nowTimeCST.Date)
                     State = CheckinState.Finished;
                 else
                     State = CheckinState.Unfinished;
