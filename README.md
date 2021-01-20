@@ -14,11 +14,15 @@ This program isn't user-friendly. Please don't use it if you don't know how to b
 
 1. Install .NET Core 3.1 SDK and build.
 
-2. Program runs under Interactive Mode without arguments, which can add bot.
+2. Program will load ```./config.json``` as configurations. If another config file is needed, specified by argument ```-c config_file_path```.
+
+3. Program runs under Interactive Mode without arguments, which can add bot.
 
     * To add a new bot, input ```add```.
+    * To do check-in, input ```checkin #username``` or ```checkin-all```.
+    * To exit, input ```exit```.
 
-3. Program runs under Check-in Mode with argument ```-a```. We strongly advice using ```crontab``` or ```Task Scheduler``` for automatic check-in.
+4. Program runs under Check-in Mode with argument ```-a```. We strongly advice using ```crontab``` or ```Task Scheduler``` for automatic check-in.
 
 ### Docker
 
