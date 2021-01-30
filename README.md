@@ -1,7 +1,5 @@
 # JNU nCov2019 Check-in
 
-[简体中文](README.zh-CN.md)
-
 This program is used for JNU Student's Daily Health Check-in for nCov2019.
 
 ## Warning
@@ -14,15 +12,27 @@ This program isn't user-friendly. Please don't use it if you don't know how to b
 
 1. Install .NET Core 3.1 SDK and build.
 
-2. Program will load ```./config.json``` as configurations. If another config file is needed, specified by argument ```-c config_file_path```.
+2. The program will load ```./config.json``` as configurations. If another config file is needed, specified by argument ```-c config_file_path```.
 
-3. Program runs under Interactive Mode without arguments, which can add bot.
+3. The program runs under Interactive Mode without arguments, which can add bot.
 
     * To add a new bot, input ```add```.
     * To do check-in, input ```checkin #username``` or ```checkin-all```.
     * To exit, input ```exit```.
 
-4. Program runs under Check-in Mode with argument ```-a```. We strongly advice using ```crontab``` or ```Task Scheduler``` for automatic check-in.
+4. The program runs under Check-in Mode with argument ```-a```. We strongly advice using ```crontab``` or ```Task Scheduler``` for automatic check-in.
+
+### Get Encrypted Username
+
+If an encrypted username is provided, the program can do check-in without original username and password, which is more secure.
+
+You can use the following bookmark to get encrypted username:
+
+1. Pull <a href="javascript:(function(){alert('Your encrypted username:\n'+sessionStorage.getItem('jnuid'));})();"><img src="https://shields.io/badge/Bookmark-Get%20Encrypted%20Username-blue?logo=pinboard&style=flat"></img></a> to your bookmark bar.
+
+2. Login Daily Health Check-in System of JNU.
+
+3. Click on bookmark and you can get your encrypted username.
 
 ### Docker
 
