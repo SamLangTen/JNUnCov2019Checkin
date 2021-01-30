@@ -26,13 +26,15 @@ This program isn't user-friendly. Please don't use it if you don't know how to b
 
 If an encrypted username is provided, the program can do check-in without original username and password, which is more secure.
 
-You can use the following bookmark to get encrypted username:
+You can use the following bookmarklet to get encrypted username:
 
-1. Pull <a href="javascript:(function(){alert('Your encrypted username:\n'+sessionStorage.getItem('jnuid'));})();">this</a> to your bookmark bar.
+1. Visit Daily Health Check-in System of JNU and add it as bookmarklet.
 
-2. Login Daily Health Check-in System of JNU.
+2. Edit the bookmarklet and replace address with the content of [this file](https://gist.github.com/SamLangTen/327535a0bb6f9a8fa97c07618a45adb7).
 
-3. Click on bookmark and you can get your encrypted username.
+3. Login Daily Health Check-in System of JNU.
+
+4. Click on bookmarklet and you can get your encrypted username.
 
 ### Docker
 
