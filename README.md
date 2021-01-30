@@ -28,7 +28,7 @@ If an encrypted username is provided, the program can do check-in without origin
 
 You can use the following bookmark to get encrypted username:
 
-1. Pull <a href="javascript:(function(){alert('Your encrypted username:\n'+sessionStorage.getItem('jnuid'));})();"><img src="https://shields.io/badge/Bookmark-Get%20Encrypted%20Username-blue?logo=pinboard&style=flat"></img></a> to your bookmark bar.
+1. Pull <a href="javascript:(function(){alert('Your encrypted username:\n'+sessionStorage.getItem('jnuid'));})();">this</a> to your bookmark bar.
 
 2. Login Daily Health Check-in System of JNU.
 
