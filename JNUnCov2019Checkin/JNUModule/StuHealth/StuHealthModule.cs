@@ -15,13 +15,12 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
     /// <summary>
     /// Represent an interface to access student health website
     /// </summary>
-    class StuHealthModule
+    class StuHealthModule : JNUModuleBase
     {
         public StuHealthModule()
         {
             Cookies = new CookieContainer();
         }
-        private CookieContainer Cookies { get; set; }
 
         /// <summary>
         /// Check-in statement of current logined user.
@@ -72,7 +71,7 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
         /// Get encryption key from frontend of StuHealth website
         /// </summary>
         /// <returns>Encryption key</returns>
-        public static async Task<string> GetEncryptionKey()
+        public static async Task<string> GetEncryptionKey(string useragent = "")
         {
             var handler = new HttpClientHandler
             {
@@ -82,7 +81,7 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
             };
             var client = new HttpClient(handler);
             client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
-            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36");
+            client.DefaultRequestHeaders.Add("User-Agent", useragent);
             client.DefaultRequestHeaders.Add("Connection", "keep-alive");
             client.DefaultRequestHeaders.Add("Host", "stuhealth.jnu.edu.cn");
             client.DefaultRequestHeaders.Add("Origin", "https://stuhealth.jnu.edu.cn");
@@ -127,7 +126,7 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
             };
             var client = new HttpClient(handler);
             client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
-            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36");
+            client.DefaultRequestHeaders.Add("User-Agent", UserAgent);
             client.DefaultRequestHeaders.Add("Connection", "keep-alive");
             client.DefaultRequestHeaders.Add("Host", "stuhealth.jnu.edu.cn");
             client.DefaultRequestHeaders.Add("Origin", "https://stuhealth.jnu.edu.cn");
@@ -183,7 +182,7 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
                 UseCookies = true
             };
             var client = new HttpClient(handler);
-            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36");
+            client.DefaultRequestHeaders.Add("User-Agent", UserAgent);
             client.DefaultRequestHeaders.Add("Connection", "keep-alive");
             client.DefaultRequestHeaders.Add("Host", "stuhealth.jnu.edu.cn");
             client.DefaultRequestHeaders.Add("Accept", "application/json, text/plain, */*");
@@ -248,7 +247,7 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
                 UseCookies = true
             };
             var client = new HttpClient(handler);
-            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36");
+            client.DefaultRequestHeaders.Add("User-Agent", UserAgent);
             client.DefaultRequestHeaders.Add("Connection", "keep-alive");
             client.DefaultRequestHeaders.Add("Host", "stuhealth.jnu.edu.cn");
             client.DefaultRequestHeaders.Add("Accept", "application/json, text/plain, */*");

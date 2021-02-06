@@ -11,9 +11,8 @@ using System.Linq;
 
 namespace JNUnCov2019Checkin.JNUModule.Ehall
 {
-    class EhallModule
+    class EhallModule : JNUModuleBase
     {
-        public CookieContainer Cookies { get; set; }
 
         public async Task Login(string checkLoginName)
         {
@@ -146,7 +145,7 @@ namespace JNUnCov2019Checkin.JNUModule.Ehall
                 var firstEvent = json["entities"].Children().FirstOrDefault(t => t["app"]["name"].Value<string>() == eventName);
                 if (firstEvent != null)
                 {
-                    
+
                     var dt = new DateTime(long.Parse(firstEvent["create"].Value<string>()) * 10000000 + 621355968000000000).ToLocalTime();
                     return dt;
                 }
