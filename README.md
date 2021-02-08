@@ -41,7 +41,10 @@ You can use the following bookmarklet to get encrypted username:
 Docker image can only run under Check-in Mode, a configuration file should be prepared first:
 
 ```
-[
+"CheckinInterval": 0,
+"GlobalUserAgent": "python-requests",
+"RetryTimes": 0,
+"Configs": [
     {
         "Username":"your username",
         "Password":"your password",
@@ -64,5 +67,13 @@ docker run -v /path/to/your/config/file.json:/app/config.json --rm samlangten/jn
 or use environment variables without mounting:
 
 ```
-docker run -e JNUCHECKIN1_USERNAME=your_username -e JNUCHECKIN1_PASSWORD=your_password -e JNUCHECKIN2_USERNAME=your_username -e JNUCHECKIN2_ENCRYPTED=your_encrypted_username --rm samlangten/jnu-ncov2019-checkin
+docker run \
+-e JNUCHECKIN_INTERVAL=0 \
+-e JNUCHECKIN_RETRY=0 \
+-e JNUCHECKIN_USERAGENT=python-requests \
+-e JNUCHECKIN1_USERNAME=your_username \
+-e JNUCHECKIN1_PASSWORD=your_password \
+-e JNUCHECKIN2_USERNAME=your_username \
+-e JNUCHECKIN2_ENCRYPTED=your_encrypted_username \
+--rm samlangten/jnu-ncov2019-checkin
 ```

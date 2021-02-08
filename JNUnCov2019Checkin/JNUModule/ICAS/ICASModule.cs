@@ -9,9 +9,8 @@ using System.Text.RegularExpressions;
 
 namespace JNUnCov2019Checkin.JNUModule.ICAS
 {
-    class ICASModule
+    class ICASModule : JNUModuleBase
     {
-        public CookieContainer Cookies { get; set; }
 
         public async Task Login(string username, string password)
         {

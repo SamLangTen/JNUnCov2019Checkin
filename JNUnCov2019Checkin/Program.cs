@@ -4,17 +4,19 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Linq;
 using JNUnCov2019Checkin.JNUModule.StuHealth;
+using JNUnCov2019Checkin.Config;
+using System.Threading;
 
 namespace JNUnCov2019Checkin
 {
     class Program
     {
 
-        static async Task<bool> Checkin(Config config, string encryptionKey)
+        static async Task<bool> Checkin(SubConfig config, string encryptionKey)
         {
 
             var stuhealth = new StuHealthModule();
-
+            stuhealth.UserAgent = config.UserAgent;
             //Get bot name
             string botName = config.Username;
 
@@ -85,23 +87,51 @@ namespace JNUnCov2019Checkin
             Console.WriteLine("  -h\tDisplay this help.");
         }
 
-        static bool CheckinAll(List<Config> configs)
+        static bool CheckinAll(GlobalConfig configs)
         {
-            if (configs == null || configs.Where(c => c.Enabled).Count() == 0) return true;
+            if (configs == null || configs.Configs == null || configs.Configs.Where(c => c.Enabled).Count() == 0) return true;
             try
             {
                 var encryptionKey = "";
                 Task.WaitAll(Task.Run(async () =>
                 {
-                    encryptionKey = await StuHealthModule.GetEncryptionKey();
+                    encryptionKey = await StuHealthModule.GetEncryptionKey(configs.GlobalUserAgent);
                 }));
                 Console.WriteLine($"[{DateTime.Now.ToString()}] JNUnCov2019Checkin program has fetched the key");
 
-                var checkTasks = configs.Where(c => c.Enabled).Select(c => Task.Run(() => Checkin(c, encryptionKey))).ToArray();
-                Task.WaitAll(checkTasks);
-                var successTaskCount = (from r in checkTasks where r.Result == true select r.Result).Count();
+                var parsedConfigs = configs.Configs.Where(c => c.Enabled).Select(t => new SubConfig()
+                {
+                    EncryptedUsername = t.EncryptedUsername,
+                    Username = t.Username,
+                    UserAgent = t.UserAgent ?? configs.GlobalUserAgent,
+                    Password = t.Password
+                }).ToList();
+                //Do checkin for each user
 
-                if (successTaskCount != checkTasks.Length)
+                var taskResults = parsedConfigs.Select(c =>
+                {
+                    for (int i = 0; i < configs.RetryTimes + 1; i++)
+                    {
+
+                        var task = Checkin(c, encryptionKey);
+                        task.Wait();
+                        Thread.Sleep(configs.CheckinInterval);
+                        if (task.Result)
+                        {
+                            break;
+                        }
+
+                        //Reach maximum retry times but still failed
+                        if (i == configs.RetryTimes)
+                        {
+                            return false;
+                        }
+                    }
+                    return true;
+                });
+
+                var successTaskCount = taskResults.Where(r => r == true).Count();
+                if (successTaskCount != parsedConfigs.Count)
                     return false;
             }
             catch (Exception ex)
@@ -112,38 +142,53 @@ namespace JNUnCov2019Checkin
             return true;
         }
 
-        static List<Config> ConstructConfigs(string configPath)
+        static GlobalConfig ConstructConfigs(string configPath)
         {
-            List<Config> configs = null;
+            GlobalConfig config = null;
             //Load config from file
             if (File.Exists(configPath))
-                configs = Config.LoadConfigs(configPath);
+                config = GlobalConfig.LoadConfigs(configPath);
             else
-                configs = new List<Config>();
+                config = new GlobalConfig()
+                {
+                    CheckinInterval = 0,
+                    GlobalUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.146 Safari/537.36",
+                    RetryTimes = 0,
+                    Configs = new List<SubConfig>()
+                };
 
             //Load config from environment variable
+            var envInterval = Environment.GetEnvironmentVariable("JNUCHECKIN_INTERVAL");
+            var envUseragent = Environment.GetEnvironmentVariable("JNUCHECKIN_USERAGENT");
+            var envRetry = Environment.GetEnvironmentVariable("JNUCHECKIN_RETRY");
+            if (envInterval != null) config.CheckinInterval = int.Parse(envInterval);
+            if (envRetry != null) config.RetryTimes = int.Parse(envRetry);
+            if (envUseragent != null) config.GlobalUserAgent = envUseragent;
             int envIndex = 1;
             while (true)
             {
-                var envConfig = new Config
+                var envConfig = new SubConfig
                 {
                     Username = Environment.GetEnvironmentVariable($"JNUCHECKIN{envIndex}_USERNAME"),
                     Password = Environment.GetEnvironmentVariable($"JNUCHECKIN{envIndex}_PASSWORD"),
                     EncryptedUsername = Environment.GetEnvironmentVariable($"JNUCHECKIN{envIndex}_ENCRYPTED"),
+                    UserAgent = Environment.GetEnvironmentVariable($"JNUCHECKIN{envIndex}_USERAGENT"),
                     Enabled = true
                 };
                 if ((envConfig.Username != null && envConfig.Password != null) || envConfig.EncryptedUsername != null)
-                    configs.Add(envConfig);
+                    config.Configs.Add(envConfig);
                 else
                     break;
 
                 envIndex++;
             }
+
+
             Console.WriteLine("Load config successfully");
-            return configs;
+            return config;
         }
 
-        static void InteractiveLoop(List<Config> configs)
+        static void InteractiveLoop(GlobalConfig config)
         {
             string encryptionKey = "";
             while (true)
@@ -152,23 +197,23 @@ namespace JNUnCov2019Checkin
                 var option = Console.ReadLine();
                 if (option == "add")
                 {
-                    var config = new Config();
+                    var sub = new SubConfig();
 
                     Console.Write("Username:");
-                    config.Username = Console.ReadLine();
+                    sub.Username = Console.ReadLine();
 
                     Console.Write("Password:");
-                    config.Password = Console.ReadLine();
+                    sub.Password = Console.ReadLine();
 
                     Console.Write("Enable this bot?(Y/n):");
-                    config.Enabled = Console.ReadLine().ToLower() == "n" ? false : true;
-                    configs.Add(config);
+                    sub.Enabled = Console.ReadLine().ToLower() == "n" ? false : true;
+                    config.Configs.Add(sub);
                 }
                 else if (option.StartsWith("checkin"))
                 {
                     if (option == "checkin-all")
                     {
-                        CheckinAll(configs);
+                        CheckinAll(config);
                     }
                     else
                     {
@@ -183,10 +228,10 @@ namespace JNUnCov2019Checkin
                         var subOptions = option.Split(" ");
                         if (subOptions.Length == 2)
                         {
-                            var config = configs.FirstOrDefault(c => c.Username == subOptions[1]);
+                            var sub = config.Configs.FirstOrDefault(c => c.Username == subOptions[1]);
                             if (config != null)
                             {
-                                Task.WaitAll(Checkin(config, encryptionKey));
+                                Task.WaitAll(Checkin(sub, encryptionKey));
                             }
                             else
                             {
@@ -270,7 +315,7 @@ namespace JNUnCov2019Checkin
 
             //Interactive mode
             InteractiveLoop(configs);
-            Config.SaveConfigs(configs, configPath);
+            GlobalConfig.SaveConfigs(configs, configPath);
         }
     }
 }
