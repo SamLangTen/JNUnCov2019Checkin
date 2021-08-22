@@ -30,11 +30,19 @@ You can use the following bookmarklet to get encrypted username:
 
 1. Visit Daily Health Check-in System of JNU and add it as bookmarklet.
 
-2. Edit the bookmarklet and replace address with the content of [this file](https://gist.github.com/SamLangTen/327535a0bb6f9a8fa97c07618a45adb7).
+2. Edit the bookmarklet and replace address with the following codes:
+
+```
+javascript:(function(){alert('Your encrypted username:\n'+sessionStorage.getItem('jnuid'));})();
+```
 
 3. Login Daily Health Check-in System of JNU.
 
 4. Click on bookmarklet and you can get your encrypted username.
+
+#### Why is encrypted username more secure?
+JNU Daily Health Check-in System (hereinafter called Stuhealth) do check-in with encrypted username (hereinafter called jnuid)  calculated by original username, which means encrypted username will not change with password.If the encrypted username or the original username and password leaks, others can permanently login Stuhealth even if user change their password. However, the lacked encrypted username can only be used for Stuhealth. The lacked original username and password can not only be used for Stuhealth, but also be accessed for other online service of JNU.
+
 
 ### Docker
 
