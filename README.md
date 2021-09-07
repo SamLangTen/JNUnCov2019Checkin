@@ -41,7 +41,7 @@ javascript:(function(){alert('Your encrypted username:\n'+sessionStorage.getItem
 4. Click on bookmarklet and you can get your encrypted username.
 
 #### Why is encrypted username more secure?
-JNU Daily Health Check-in System (hereinafter called Stuhealth) do check-in with encrypted username (hereinafter called jnuid) calculated by original username, which means jnuid will not change with password. If jnuid or the original username and password leaks, others can permanently login Stuhealth even if user change their password. However, the leaked jnuid can only be used for Stuhealth. The leaked original username and password can not only be used for Stuhealth, but also be accessed for other online service of JNU.
+JNU Daily Health Check-in System (hereinafter called Stuhealth) does check-in with encrypted username (hereinafter called jnuid) calculated by original username, which means jnuid will not change with password. If jnuid or the original username and password leaks, others can permanently login Stuhealth even if users change their passwords. However, the leaked jnuid can only be used for Stuhealth. Instead, the leaked original username and password can not only be used for Stuhealth, but also be accessed for other online services of JNU.
 
 
 ### Docker
