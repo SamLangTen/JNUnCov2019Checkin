@@ -22,28 +22,6 @@ This program isn't user-friendly. Please don't use it if you don't know how to b
 
 4. The program runs under Check-in Mode with argument ```-a```. We strongly advice using ```crontab``` or ```Task Scheduler``` for automatic check-in.
 
-### Get Encrypted Username
-
-If an encrypted username is provided, the program can do check-in without original username and password, which is more secure.
-
-You can use the following bookmarklet to get encrypted username:
-
-1. Visit Daily Health Check-in System of JNU and add it as bookmarklet.
-
-2. Edit the bookmarklet and replace address with the following codes:
-
-```
-javascript:(function(){alert('Your encrypted username:\n'+sessionStorage.getItem('jnuid'));})();
-```
-
-3. Login Daily Health Check-in System of JNU.
-
-4. Click on bookmarklet and you can get your encrypted username.
-
-#### Why is encrypted username more secure?
-JNU Daily Health Check-in System (hereinafter called Stuhealth) does check-in with encrypted username (hereinafter called jnuid) calculated by original username, which means jnuid will not change with password. If jnuid or the original username and password leaks, others can permanently login Stuhealth even if users change their passwords. However, the leaked jnuid can only be used for Stuhealth. Instead, the leaked original username and password can not only be used for Stuhealth, but also be accessed for other online services of JNU.
-
-
 ### Docker
 
 Docker image can only run under Check-in Mode, a configuration file should be prepared first:
@@ -56,11 +34,6 @@ Docker image can only run under Check-in Mode, a configuration file should be pr
     {
         "Username":"your username",
         "Password":"your password",
-        "Enabled":true
-    },
-    {
-        "Username":"your bot name",
-        "EncryptedUsername":"your encrypted username",
         "Enabled":true
     }
 ]
@@ -82,6 +55,5 @@ docker run \
 -e JNUCHECKIN1_USERNAME=your_username \
 -e JNUCHECKIN1_PASSWORD=your_password \
 -e JNUCHECKIN2_USERNAME=your_username \
--e JNUCHECKIN2_ENCRYPTED=your_encrypted_username \
 --rm samlangten/jnu-ncov2019-checkin
 ```
