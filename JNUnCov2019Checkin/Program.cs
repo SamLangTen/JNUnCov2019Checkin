@@ -93,8 +93,9 @@ namespace JNUnCov2019Checkin
             if (configs == null || configs.Configs == null || configs.Configs.Where(c => c.Enabled).Count() == 0) return true;
             try
             {
-                var validation = ValidationHelper.ValidationHelper.GetValidationHelper(configs.ValidationHelper, configs);
-
+                string validationHelper = Environment.GetEnvironmentVariable("JNUCHECKIN_VALIDATION_HELPER");
+                if (validationHelper == null) validationHelper = configs.ValidationHelper;
+                var validation = ValidationHelper.ValidationHelper.GetValidationHelper(validationHelper, configs);
                 var encryptionKey = "";
                 Task.WaitAll(Task.Run(async () =>
                 {
@@ -193,7 +194,9 @@ namespace JNUnCov2019Checkin
 
         static void InteractiveLoop(GlobalConfig config)
         {
-            var validation = ValidationHelper.ValidationHelper.GetValidationHelper(config.ValidationHelper, config);
+            string validationHelper = Environment.GetEnvironmentVariable("JNUCHECKIN_VALIDATION_HELPER");
+            if (validationHelper == null) validationHelper = config.ValidationHelper;
+            var validation = ValidationHelper.ValidationHelper.GetValidationHelper(validationHelper, config);
 
             string encryptionKey = "";
             while (true)
