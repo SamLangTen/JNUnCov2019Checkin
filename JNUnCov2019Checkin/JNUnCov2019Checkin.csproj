@@ -14,4 +14,10 @@
     <PackageReference Include="System.Net.Primitives" Version="4.3.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="ValidationHelper\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ValidationHelper\" />
+  </ItemGroup>
 </Project>
