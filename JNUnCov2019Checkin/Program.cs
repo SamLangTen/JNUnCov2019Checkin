@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Reflection;
 using JNUnCov2019Checkin.JNUModule.StuHealth;
 using JNUnCov2019Checkin.Config;
 using System.Threading;
+using JNUnCov2019Checkin.ValidationHelper;
 
 namespace JNUnCov2019Checkin
 {
     class Program
     {
 
-        static async Task<bool> Checkin(SubConfig config, string encryptionKey)
+        static async Task<bool> Checkin(SubConfig config, string encryptionKey, ValidationHelper.ValidationHelper validation)
         {
-
             var stuhealth = new StuHealthModule();
             stuhealth.UserAgent = config.UserAgent;
             //Get bot name
@@ -29,7 +30,7 @@ namespace JNUnCov2019Checkin
                     //Login mode
                     var encryptedPassword = StuHealthModule.EncryptPassword(config.Password, encryptionKey);
 
-                    encryptedUsername = await stuhealth.Login(config.Username, encryptedPassword);
+                    encryptedUsername = await stuhealth.Login(config.Username, encryptedPassword, await validation.GetValidationAsync());
                     Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{botName} has logined in to StuHealth");
                 }
                 else
@@ -92,6 +93,8 @@ namespace JNUnCov2019Checkin
             if (configs == null || configs.Configs == null || configs.Configs.Where(c => c.Enabled).Count() == 0) return true;
             try
             {
+                var validation = ValidationHelper.ValidationHelper.GetValidationHelper(configs.ValidationHelper, configs);
+
                 var encryptionKey = "";
                 Task.WaitAll(Task.Run(async () =>
                 {
@@ -113,7 +116,7 @@ namespace JNUnCov2019Checkin
                     for (int i = 0; i < configs.RetryTimes + 1; i++)
                     {
 
-                        var task = Checkin(c, encryptionKey);
+                        var task = Checkin(c, encryptionKey, validation);
                         task.Wait();
                         Thread.Sleep(configs.CheckinInterval);
                         if (task.Result)
@@ -190,6 +193,8 @@ namespace JNUnCov2019Checkin
 
         static void InteractiveLoop(GlobalConfig config)
         {
+            var validation = ValidationHelper.ValidationHelper.GetValidationHelper(config.ValidationHelper, config);
+
             string encryptionKey = "";
             while (true)
             {
@@ -231,7 +236,7 @@ namespace JNUnCov2019Checkin
                             var sub = config.Configs.FirstOrDefault(c => c.Username == subOptions[1]);
                             if (config != null)
                             {
-                                Task.WaitAll(Checkin(sub, encryptionKey));
+                                Task.WaitAll(Checkin(sub, encryptionKey, validation));
                             }
                             else
                             {

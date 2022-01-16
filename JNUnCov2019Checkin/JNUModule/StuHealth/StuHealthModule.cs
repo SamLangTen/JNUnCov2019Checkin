@@ -9,6 +9,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;
+using JNUnCov2019Checkin.ValidationHelper;
 
 namespace JNUnCov2019Checkin.JNUModule.StuHealth
 {
@@ -103,9 +104,9 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
         /// <param name="password">Plain password</param>
         /// <param name="encryptKey">Encryption key used to encrypt password in StuHealth website frontend</param>
         /// <returns>Username encrypted by server</returns>
-        public async Task<string> Login(string username, string password, string encryptKey)
+        public async Task<string> Login(string username, string password, string encryptKey, string validationToken)
         {
-            return await Login(username, EncryptPassword(password, encryptKey));
+            return await Login(username, EncryptPassword(password, encryptKey), validationToken);
         }
 
         /// <summary>
@@ -114,7 +115,7 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
         /// <param name="username">JNU Id</param>
         /// <param name="encryptedPassword">Encrypted password</param>
         /// <returns>Username encrypted by server</returns>
-        public async Task<string> Login(string username, string encryptedPassword)
+        public async Task<string> Login(string username, string encryptedPassword, string validationToken)
         {
 
             var handler = new HttpClientHandler
@@ -138,7 +139,7 @@ namespace JNUnCov2019Checkin.JNUModule.StuHealth
             client.DefaultRequestHeaders.Add("Accept", "application/json, text/plain, */*");
             client.DefaultRequestHeaders.Add("Referer", "https://stuhealth.jnu.edu.cn/");
 
-            using (var postData = new StringContent("{\"username\":\"" + username + "\",\"password\":\"" + encryptedPassword + "\"}"))
+            using (var postData = new StringContent("{\"username\":\"" + username + "\",\"password\":\"" + encryptedPassword + "\",\"validate\":\"" + validationToken + "\"}"))
             {
                 postData.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
