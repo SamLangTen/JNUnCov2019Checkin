@@ -64,4 +64,5 @@ docker run \
 ## Validation Helper
 
 JNU Student's Daily Health Check-in for COVID19 is protected by Netease Yidun Captcha System. Therefore, a validation helper that assists this program to fetch correct validation code is needed.
-This program provides AkarinValidationHelper, which can fetch validation code from a special API implemented [Akarin](https://github.com/TransparentLC)'s solution.
+This program provides AkarinValidationHelper, which can fetch validation code from a special API implemented [Akarin's solution](https://github.com/SO-JNU/stuhealth-validator).
+        "Username":"your username",
