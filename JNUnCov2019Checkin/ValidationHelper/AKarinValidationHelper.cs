@@ -26,7 +26,12 @@ namespace JNUnCov2019Checkin.ValidationHelper
 
             var client = new HttpClient();
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {akarinToken}");
-            String rtnString = await (await client.PostAsync(akarinEndpoint + "/refreshToken", null)).Content.ReadAsStringAsync();
+            HttpResponseMessage response = await client.PostAsync(akarinEndpoint, null);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new ValidationHelperExeception(await response.Content.ReadAsStringAsync());
+            }
+            String rtnString = await response.Content.ReadAsStringAsync();
             var jobj = JObject.Parse(rtnString);
             var token = jobj["validation_token"].ToString();
             return token;

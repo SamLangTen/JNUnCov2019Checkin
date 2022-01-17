@@ -71,6 +71,10 @@ namespace JNUnCov2019Checkin
             {
                 Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{botName} can not do check-in because it has been done in 6 hours, please do check-in again after 6 hours");
             }
+            catch (ValidationHelperExeception ex)
+            {
+                Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{botName} has failed to do check-in, because validation helper reported an exception: {ex.Message}");
+            }
             catch (Exception ex)
             {
                 Console.WriteLine($"[{DateTime.Now.ToString()}] Check-in bot #{botName} got a unhandled exception, reason: {ex.Message}");
