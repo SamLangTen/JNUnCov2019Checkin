@@ -1,6 +1,8 @@
 # JNU nCov2019 Check-in
 
-This program is used for JNU Student's Daily Health Check-in for COVID19.
+The pandemic came an end and stuhealth is down.
+ 
+~This program is used for JNU Student's Daily Health Check-in for COVID19.~
 
 ## Warning
 
